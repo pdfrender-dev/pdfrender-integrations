@@ -1,0 +1,54 @@
+{
+  "name": "@pdfrender-dev/n8n-nodes-pdfrender",
+  "version": "1.0.0",
+  "description": "HTML and CSS to PDF API and MCP server. WeasyPrint with page headers, footers and page numbers, no headless browser. Hosted in Germany.",
+  "license": "MIT",
+  "homepage": "https://pdfrender.dev",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "pdfrender"
+  ],
+  "author": {
+    "name": "podshalocef",
+    "email": "contact@podshalocef.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pdfrender-dev/pdfrender-integrations.git",
+    "directory": "n8n"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/PdfrenderApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Pdfrender/Pdfrender.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "0.50.4",
+    "eslint": "9.39.4",
+    "prettier": "3.8.3",
+    "release-it": "20.2.0",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}

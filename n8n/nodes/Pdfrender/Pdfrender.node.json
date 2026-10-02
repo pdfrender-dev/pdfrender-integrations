@@ -1,0 +1,20 @@
+{
+  "node": "@pdfrender-dev/n8n-nodes-pdfrender.pdfrender",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "categories": [
+    "Utility"
+  ],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://pdfrender.dev/go/n8n?to=/app/api-keys"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://github.com/pdfrender-dev/pdfrender-integrations/tree/main/n8n"
+      }
+    ]
+  }
+}
