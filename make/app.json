@@ -1,0 +1,25 @@
+{
+  "name": "pdfrender-qu7fsy",
+  "version": 1,
+  "label": "pdfrender",
+  "description": "HTML and CSS to PDF API and MCP server. WeasyPrint with page headers, footers and page numbers, no headless browser. Hosted in Germany.",
+  "theme": "#007e78",
+  "connection": {
+    "label": "pdfrender",
+    "type": "basic"
+  },
+  "modules": [
+    {
+      "name": "getMe",
+      "typeId": 4,
+      "label": "Your plan, remaining requests, and remaining credits",
+      "description": "Check where you stand before a call fails."
+    },
+    {
+      "name": "renderHtmlToPdf",
+      "typeId": 4,
+      "label": "Render an HTML document to a PDF",
+      "description": "Send an HTML document and get the PDF back as a download."
+    }
+  ]
+}

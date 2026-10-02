@@ -12,7 +12,10 @@ Official integrations for the [pdfrender API](https://pdfrender.dev), generated 
 
 ## Integrations
 
-The first packages are on their way.
+- **n8n** — community node [`@pdfrender-dev/n8n-nodes-pdfrender`](https://www.npmjs.com/package/@pdfrender-dev/n8n-nodes-pdfrender), install it under Settings → Community Nodes
+- **Python SDK** — `pip install pdfrender` · [PyPI](https://pypi.org/project/pdfrender/)
+- **TypeScript SDK** — `npm install @pdfrender-dev/sdk` · [npm](https://www.npmjs.com/package/@pdfrender-dev/sdk)
+- **GitHub Action** — [`pdfrender-dev/pdfrender-action`](https://github.com/marketplace/actions/pdfrender-api) on the GitHub Marketplace
 
 ## Operations
 

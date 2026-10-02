@@ -1,0 +1,28 @@
+identity:
+  author: "podshalocef"
+  name: "pdfrender"
+  label:
+    en_US: "pdfrender"
+  description:
+    en_US: "HTML and CSS to PDF API and MCP server. WeasyPrint with page headers, footers and page numbers, no headless browser. Hosted in Germany."
+  icon: "icon.svg"
+  tags:
+    - "productivity"
+    - "utilities"
+credentials_for_provider:
+  x_api_key:
+    type: "secret-input"
+    required: true
+    label:
+      en_US: "pdfrender API key"
+    placeholder:
+      en_US: "Paste your pdfrender API key"
+    help:
+      en_US: "Create an API key in your pdfrender account"
+    url: "https://pdfrender.dev/go/dify?to=/app/api-keys"
+tools:
+  - "tools/get_me.yaml"
+  - "tools/render_html_to_pdf.yaml"
+extra:
+  python:
+    source: "provider/pdfrender.py"

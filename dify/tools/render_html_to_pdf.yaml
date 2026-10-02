@@ -1,0 +1,48 @@
+identity:
+  name: "render_html_to_pdf"
+  author: "podshalocef"
+  label:
+    en_US: "Render HTML to PDF"
+description:
+  human:
+    en_US: "Render an HTML document to a PDF."
+  llm: "Render an HTML document to a PDF. Send an HTML document and get the PDF back as a download."
+parameters:
+  - name: "html"
+    type: "string"
+    required: true
+    label:
+      en_US: "HTML"
+    human_description:
+      en_US: "The HTML document, up to 2 MB. Inline images, fonts and CSS as data: URIs; external resources are not loaded. JavaScript is not run."
+    llm_description: "The HTML document, up to 2 MB. Inline images, fonts and CSS as data: URIs; external resources are not loaded. JavaScript is not run."
+    form: "llm"
+  - name: "filename"
+    type: "string"
+    required: false
+    label:
+      en_US: "Filename"
+    human_description:
+      en_US: "Filename of the downloaded PDF. Characters other than A–Z, a–z, 0–9, `.`, `_` and `-` become `_`, and `.pdf` is added if missing."
+    llm_description: "Filename of the downloaded PDF. Characters other than A–Z, a–z, 0–9, `.`, `_` and `-` become `_`, and `.pdf` is added if missing."
+    form: "llm"
+    default: "document.pdf"
+  - name: "pdf_variant"
+    type: "select"
+    required: false
+    label:
+      en_US: "PDF variant"
+    human_description:
+      en_US: "Write the PDF as PDF/A-2b or PDF/A-3b, for archiving. Paid plans only: without one, the call gets 403 `feature_not_available` with an `upgrade_url`. Leave it out for a regular PDF."
+    llm_description: "Write the PDF as PDF/A-2b or PDF/A-3b, for archiving. Paid plans only: without one, the call gets 403 `feature_not_available` with an `upgrade_url`. Leave it out for a regular PDF."
+    form: "llm"
+    options:
+      - value: "pdf/a-2b"
+        label:
+          en_US: "pdf/a-2b"
+      - value: "pdf/a-3b"
+        label:
+          en_US: "pdf/a-3b"
+extra:
+  python:
+    source: "tools/render_html_to_pdf.py"

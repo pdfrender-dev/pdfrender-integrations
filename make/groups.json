@@ -1,0 +1,9 @@
+[
+  {
+    "label": "pdfrender",
+    "modules": [
+      "getMe",
+      "renderHtmlToPdf"
+    ]
+  }
+]

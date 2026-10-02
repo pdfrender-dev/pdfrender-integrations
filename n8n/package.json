@@ -1,6 +1,6 @@
 {
   "name": "@pdfrender-dev/n8n-nodes-pdfrender",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "HTML and CSS to PDF API and MCP server. WeasyPrint with page headers, footers and page numbers, no headless browser. Hosted in Germany.",
   "license": "MIT",
   "homepage": "https://pdfrender.dev",

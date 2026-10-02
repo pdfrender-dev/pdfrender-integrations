@@ -1,0 +1,20 @@
+{
+  "url": "/v1/render",
+  "method": "POST",
+  "type": "json",
+  "body": {
+    "html": "{{parameters.html}}",
+    "filename": "{{ifempty(parameters.filename, undefined)}}",
+    "pdf_variant": "{{ifempty(parameters.pdf_variant, undefined)}}"
+  },
+  "response": {
+    "type": {
+      "*": "binary",
+      "400-599": "json"
+    },
+    "output": {
+      "file_name": "{{ifempty(parameters.filename, 'document.pdf')}}",
+      "data": "{{body}}"
+    }
+  }
+}

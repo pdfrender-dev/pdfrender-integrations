@@ -1,0 +1,34 @@
+[
+  {
+    "name": "html",
+    "label": "Html",
+    "required": true,
+    "type": "text",
+    "help": "The HTML document, up to 2 MB. Inline images, fonts and CSS as data: URIs; external resources are not loaded. JavaScript is not run."
+  },
+  {
+    "name": "filename",
+    "label": "Filename",
+    "required": false,
+    "type": "text",
+    "help": "Filename of the downloaded PDF. Characters other than A–Z, a–z, 0–9, `.`, `_` and `-` become `_`, and `.pdf` is added if missing.",
+    "default": "document.pdf"
+  },
+  {
+    "name": "pdf_variant",
+    "label": "Pdf variant",
+    "required": false,
+    "type": "select",
+    "options": [
+      {
+        "label": "pdf/a-2b",
+        "value": "pdf/a-2b"
+      },
+      {
+        "label": "pdf/a-3b",
+        "value": "pdf/a-3b"
+      }
+    ],
+    "help": "Write the PDF as PDF/A-2b or PDF/A-3b, for archiving. Paid plans only: without one, the call gets 403 `feature_not_available` with an `upgrade_url`. Leave it out for a regular PDF."
+  }
+]
