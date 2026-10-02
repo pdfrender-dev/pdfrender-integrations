@@ -1,0 +1,194 @@
+{
+  "name": "Webhook JSON to PDF, sent by email (pdfrender)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Webhook JSON to PDF, sent by email\n\nA POST with a JSON body arrives, a Code node turns the fields you choose into an HTML document, pdfrender renders it to a PDF, and Gmail sends the PDF as an attachment.\n\n**Try it**: the Webhook node has pinned sample data, so **Execute workflow** runs end to end without a real call. Unpin it to receive live requests.\n\nAPI key: https://pdfrender.dev/go/tpl-webhook-json-to-pdf-email?to=/app/api-keys",
+        "height": 320,
+        "width": 560,
+        "color": 4
+      },
+      "id": "17341af9-896a-59c9-9e5b-0eee5bbc21b1",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Setup\n\n1. **Receive order JSON**: copy the production URL and POST your JSON to it. The node answers at once; the PDF is made afterwards.\n2. **Build HTML**: edit the field names and the HTML. Only fields named there reach the PDF, and every value is HTML-escaped.\n3. **pdfrender node**: on self-hosted n8n, open **Settings > Community Nodes**, install `@pdfrender-dev/n8n-nodes-pdfrender`, then add a **pdfrender API** credential with your API key. On n8n Cloud, which installs only verified community nodes, replace this node with an HTTP Request node: `POST https://api.pdfrender.dev/v1/render`, header `X-API-Key`, a JSON body with the fields `html` and `filename` (Using Fields Below) and Response Format **File**. The README has the details.\n4. **Email the PDF**: add a Gmail credential. The recipient comes from `customer.email` in the payload.",
+        "height": 320,
+        "width": 600,
+        "color": 6
+      },
+      "id": "bdb8ef2d-6226-526e-b17f-e3d496c865d4",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order-to-pdf",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "5b6e7165-91ac-56cc-a1ea-edae3f022e9a",
+      "name": "Receive order JSON",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "6d5b80e5-eb1a-5173-b64f-741429ddc24c"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Runs once per webhook call. Only the fields named below reach the PDF, so a\n// new or renamed key in the payload cannot break the layout. Change the\n// field names and the HTML to match your payload.\nconst body = $json.body ?? {};\nconst customer = body.customer ?? {};\nconst address = customer.address ?? {};\nconst items = Array.isArray(body.items) ? body.items : [];\nconst currency = body.currency ?? 'EUR';\n\nconst esc = (v) => String(v ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' })[c]);\nconst money = (n) => Number(n || 0).toFixed(2);\nconst lineTotal = (it) => Number(it.qty || 0) * Number(it.unit_price || 0);\nconst total = items.reduce((sum, it) => sum + lineTotal(it), 0);\n\nconst rows = items\n  .map(\n    (it) => `<tr><td>${esc(it.name)}</td><td class=\"num\">${esc(it.qty)}</td>` +\n      `<td class=\"num\">${money(it.unit_price)}</td><td class=\"num\">${money(lineTotal(it))}</td></tr>`,\n  )\n  .join('\\n');\n\nconst html = `<!doctype html>\n<html><head><meta charset=\"utf-8\"><style>\n@page { size: A4; margin: 20mm;\n  @bottom-center { content: \"Page \" counter(page) \" of \" counter(pages); font: 8pt sans-serif; color: #6b7480 } }\nbody { font: 10.5pt/1.5 \"DejaVu Sans\", sans-serif; color: #1c2024 }\nh1 { font-size: 18pt; margin: 0 0 4mm }\n.meta { color: #6b7480; margin-bottom: 8mm }\ntable { width: 100%; border-collapse: collapse; margin-top: 6mm }\nth { text-align: left; border-bottom: 2px solid #1c2024; padding: 2mm 0 }\ntd { padding: 2.5mm 0; border-bottom: 1px solid #e3e6ea }\n.num { text-align: right }\ntfoot td { font-weight: bold; border-bottom: none }\nthead { display: table-header-group }\ntr { break-inside: avoid }\n</style></head><body>\n<h1>Order ${esc(body.order_id)}</h1>\n<p class=\"meta\">${esc(body.created_at)}</p>\n<p><strong>${esc(customer.name)}</strong><br>\n${esc(address.street)}<br>${esc(address.postal_code)} ${esc(address.city)}<br>${esc(address.country)}</p>\n<table>\n  <thead><tr><th>Item</th><th class=\"num\">Qty</th><th class=\"num\">Unit price</th><th class=\"num\">Amount</th></tr></thead>\n  <tbody>\n${rows}\n  </tbody>\n  <tfoot><tr><td colspan=\"3\">Total (${esc(currency)})</td><td class=\"num\">${money(total)}</td></tr></tfoot>\n</table>\n${body.notes ? `<p>${esc(body.notes)}</p>` : ''}\n</body></html>`;\n\nconst id = String(body.order_id ?? 'document').replace(/[^A-Za-z0-9_-]/g, '_');\nreturn {\n  json: {\n    html,\n    filename: `order-${id}.pdf`,\n    email_to: customer.email ?? '',\n    customer_name: customer.name ?? '',\n    subject: `Your order ${body.order_id ?? ''}`.trim(),\n  },\n};\n"
+      },
+      "id": "dec67d99-f388-59fc-8ba4-1d413194036e",
+      "name": "Build HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "pdfrender",
+        "operation": "render_html_to_pdf",
+        "html": "={{ $json.html }}",
+        "additionalFields": {
+          "filename": "={{ $json.filename }}"
+        }
+      },
+      "id": "bfd21f89-95c0-5616-80d9-e396a01f7df5",
+      "name": "Render PDF",
+      "type": "@pdfrender-dev/n8n-nodes-pdfrender.pdfrender",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Build HTML').item.json.email_to }}",
+        "subject": "={{ $('Build HTML').item.json.subject }}",
+        "emailType": "html",
+        "message": "=<p>Hello {{ $('Build HTML').item.json.customer_name }},</p><p>your order confirmation is attached as a PDF.</p>",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "data"
+              }
+            ]
+          }
+        }
+      },
+      "id": "83bce851-466b-5488-b1d0-33acdfda3f9d",
+      "name": "Email the PDF",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Receive order JSON": {
+      "main": [
+        [
+          {
+            "node": "Build HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build HTML": {
+      "main": [
+        [
+          {
+            "node": "Render PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render PDF": {
+      "main": [
+        [
+          {
+            "node": "Email the PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Receive order JSON": [
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "order_id": "2026-0412",
+            "created_at": "2026-10-02",
+            "currency": "EUR",
+            "customer": {
+              "name": "Northwind Studio",
+              "email": "billing@example.com",
+              "address": {
+                "street": "Hafenstraße 12",
+                "postal_code": "20457",
+                "city": "Hamburg",
+                "country": "Germany"
+              }
+            },
+            "items": [
+              {
+                "sku": "DR-09",
+                "name": "Design retainer, September",
+                "qty": 1,
+                "unit_price": 1800
+              },
+              {
+                "sku": "IL-06",
+                "name": "Illustration, cover set",
+                "qty": 6,
+                "unit_price": 120
+              }
+            ],
+            "notes": "Thank you for your order."
+          }
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

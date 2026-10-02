@@ -17,6 +17,16 @@ Official integrations for the [pdfrender API](https://pdfrender.dev), generated 
 - **TypeScript SDK** — `npm install @pdfrender-dev/sdk` · [npm](https://www.npmjs.com/package/@pdfrender-dev/sdk)
 - **GitHub Action** — [`pdfrender-dev/pdfrender-action`](https://github.com/marketplace/actions/pdfrender-api) on the GitHub Marketplace
 
+## Templates
+
+Ready-made automations on the API: the walkthrough on the site, the files in this repository.
+
+| Template | Platform | Walkthrough | Files |
+|---|---|---|---|
+| Webhook JSON to PDF, sent by email (n8n) | n8n | [pdfrender.dev/templates/webhook-json-to-pdf-email](https://pdfrender.dev/templates/webhook-json-to-pdf-email) | [templates/webhook-json-to-pdf-email](templates/webhook-json-to-pdf-email) |
+| New sheet row to PDF (n8n) | n8n | [pdfrender.dev/templates/row-to-pdf](https://pdfrender.dev/templates/row-to-pdf) | [templates/row-to-pdf](templates/row-to-pdf) |
+| Scheduled report as a PDF, sent by email (n8n) | n8n | [pdfrender.dev/templates/scheduled-report-pdf-email](https://pdfrender.dev/templates/scheduled-report-pdf-email) | [templates/scheduled-report-pdf-email](templates/scheduled-report-pdf-email) |
+
 ## Operations
 
 | Operation | Endpoint | What it does |

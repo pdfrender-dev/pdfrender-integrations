@@ -43,6 +43,12 @@ openapi.json
 openapi.sdk.json
 python/README.md
 python/config.yml
+templates/row-to-pdf/README.md
+templates/row-to-pdf/workflow.json
+templates/scheduled-report-pdf-email/README.md
+templates/scheduled-report-pdf-email/workflow.json
+templates/webhook-json-to-pdf-email/README.md
+templates/webhook-json-to-pdf-email/workflow.json
 typescript/README.md
 typescript/openapi-ts.config.ts
 typescript/package.json

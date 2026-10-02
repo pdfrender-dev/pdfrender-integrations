@@ -1,0 +1,209 @@
+{
+  "name": "Scheduled report as a PDF, sent by email (pdfrender)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Scheduled report as a PDF, sent by email\n\nEvery morning at 7:00 the workflow fetches records from an API, builds one color-coded HTML report (expired, due within 7 days, due within 30 days), renders it to a PDF with pdfrender and emails it.\n\n**Try it**: the fetch step has pinned sample records, so **Execute workflow** runs end to end before you point it at your API.\n\nAPI key: https://pdfrender.dev/go/tpl-scheduled-report-pdf-email?to=/app/api-keys",
+        "height": 340,
+        "width": 560,
+        "color": 4
+      },
+      "id": "14be7a55-8c7a-5cbc-acac-83e0037c1acb",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Setup\n\n1. **Every day at 7:00**: change the time, or switch the interval to weeks or months for a client report.\n2. **Fetch records**: set the URL (and auth) of the API that returns your records as a JSON array. Any n8n node that outputs items works here: a database query, Google Sheets, Airtable.\n3. **Build report HTML**: rename the keys, change the thresholds and the layout.\n4. **pdfrender node**: on self-hosted n8n, open **Settings > Community Nodes**, install `@pdfrender-dev/n8n-nodes-pdfrender`, then add a **pdfrender API** credential with your API key. On n8n Cloud, which installs only verified community nodes, replace this node with an HTTP Request node: `POST https://api.pdfrender.dev/v1/render`, header `X-API-Key`, a JSON body with the fields `html` and `filename` (Using Fields Below) and Response Format **File**. The README has the details.\n5. **Email the PDF**: add a Gmail credential and set the recipients.",
+        "height": 340,
+        "width": 660,
+        "color": 6
+      },
+      "id": "da62e0b3-4ef6-5f72-9a45-c2c65e8d6b9d",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "4cde1005-7417-5649-98a4-a8da83177150",
+      "name": "Every day at 7:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://example.com/api/permits",
+        "options": {}
+      },
+      "id": "925b0e6a-6413-5996-9ee2-28ae43f069f9",
+      "name": "Fetch records",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Runs once for ALL fetched records and builds ONE report. Each record has a\n// name, a type and an ISO expiry date (\"expires\"); rename the keys to match\n// your API. Rows are grouped by urgency and color-coded.\nconst DAY = 24 * 60 * 60 * 1000;\nconst today = new Date();\ntoday.setUTCHours(0, 0, 0, 0);\n\nconst esc = (v) => String(v ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' })[c]);\nconst status = (days) =>\n  days < 0 ? ['Expired', '#c62828'] :\n  days <= 7 ? ['Within 7 days', '#ef6c00'] :\n  days <= 30 ? ['Within 30 days', '#f9a825'] : null;\n\nconst rows = $input.all()\n  .map(({ json }) => ({ ...json, days: Math.floor((new Date(json.expires) - today) / DAY) }))\n  .filter((r) => !Number.isNaN(r.days) && status(r.days))\n  .sort((a, b) => a.days - b.days);\n\nconst body = rows.length\n  ? rows.map((r) => {\n      const [label, color] = status(r.days);\n      return `<tr><td>${esc(r.name)}</td><td>${esc(r.type)}</td><td>${esc(r.expires)}</td>` +\n        `<td><span class=\"dot\" style=\"background:${color}\"></span>${label}</td></tr>`;\n    }).join('\\n')\n  : '<tr><td colspan=\"4\">Nothing expires in the next 30 days.</td></tr>';\n\nconst date = today.toISOString().slice(0, 10);\nconst html = `<!doctype html>\n<html><head><meta charset=\"utf-8\"><style>\n@page { size: A4 landscape; margin: 15mm;\n  @top-right { content: \"Expiry report ${date}\"; font: 8pt sans-serif; color: #6b7480 }\n  @bottom-center { content: \"Page \" counter(page) \" of \" counter(pages); font: 8pt sans-serif; color: #6b7480 } }\nbody { font: 10pt/1.45 \"DejaVu Sans\", sans-serif; color: #1c2024 }\ntable { width: 100%; border-collapse: collapse }\nth { text-align: left; border-bottom: 2px solid #1c2024; padding: 2mm 0 }\ntd { padding: 2mm 0; border-bottom: 1px solid #e3e6ea }\nthead { display: table-header-group }\ntr { break-inside: avoid }\n.dot { display: inline-block; width: 3mm; height: 3mm; border-radius: 50%; margin-right: 2mm }\n</style></head><body>\n<h1>Expiry report</h1>\n<p>${date} · ${rows.length} item(s) expired or due within 30 days</p>\n<table>\n  <thead><tr><th>Name</th><th>Type</th><th>Expires</th><th>Status</th></tr></thead>\n  <tbody>\n${body}\n  </tbody>\n</table>\n</body></html>`;\n\nreturn [{ json: { html, filename: `expiry-report-${date}.pdf`, count: rows.length, date } }];\n"
+      },
+      "id": "3c75adc3-11a9-5db3-9166-49fceb79ba2e",
+      "name": "Build report HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "pdfrender",
+        "operation": "render_html_to_pdf",
+        "html": "={{ $json.html }}",
+        "additionalFields": {
+          "filename": "={{ $json.filename }}"
+        }
+      },
+      "id": "d1637271-ff8a-51cb-96f8-9fa61602cb12",
+      "name": "Render PDF",
+      "type": "@pdfrender-dev/n8n-nodes-pdfrender.pdfrender",
+      "typeVersion": 1,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "team@example.com",
+        "subject": "=Expiry report {{ $('Build report HTML').item.json.date }}",
+        "emailType": "html",
+        "message": "=<p>{{ $('Build report HTML').item.json.count }} item(s) are expired or due within 30 days. The report is attached as a PDF.</p>",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "data"
+              }
+            ]
+          }
+        }
+      },
+      "id": "415f7acb-d320-51a4-8653-d38fa0521c7e",
+      "name": "Email the PDF",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every day at 7:00": {
+      "main": [
+        [
+          {
+            "node": "Fetch records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch records": {
+      "main": [
+        [
+          {
+            "node": "Build report HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build report HTML": {
+      "main": [
+        [
+          {
+            "node": "Render PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render PDF": {
+      "main": [
+        [
+          {
+            "node": "Email the PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Fetch records": [
+      {
+        "json": {
+          "name": "Truck HH-LX 214",
+          "type": "Insurance",
+          "expires": "2026-09-28"
+        }
+      },
+      {
+        "json": {
+          "name": "Truck HH-LX 214",
+          "type": "Inspection",
+          "expires": "2026-10-06"
+        }
+      },
+      {
+        "json": {
+          "name": "Van HH-KM 88",
+          "type": "Port pass",
+          "expires": "2026-10-21"
+        }
+      },
+      {
+        "json": {
+          "name": "Van HH-KM 88",
+          "type": "Insurance",
+          "expires": "2027-03-01"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

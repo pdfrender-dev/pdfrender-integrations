@@ -1,0 +1,181 @@
+{
+  "name": "New sheet row to PDF (pdfrender)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## New sheet row to PDF\n\nEach new row in a Google Sheet becomes a PDF document (here an invoice), which Gmail sends to the address in the row.\n\n**Sheet headers** (row 1): `Invoice`, `Client`, `Email`, `Description`, `Quantity`, `Unit price`, `Due date`.\n\n**Try it**: the trigger has a pinned sample row, so **Execute workflow** runs end to end before you connect a sheet.\n\nAPI key: https://pdfrender.dev/go/tpl-row-to-pdf?to=/app/api-keys",
+        "height": 340,
+        "width": 560,
+        "color": 4
+      },
+      "id": "5d0cb66b-9edf-5000-9ac2-d61b39553e0b",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Setup\n\n1. **New row in sheet**: add a Google Sheets Trigger credential, then pick the document and the sheet. It checks for new rows every minute.\n2. **Build HTML**: match the column names and edit the layout.\n3. **pdfrender node**: on self-hosted n8n, open **Settings > Community Nodes**, install `@pdfrender-dev/n8n-nodes-pdfrender`, then add a **pdfrender API** credential with your API key. On n8n Cloud, which installs only verified community nodes, replace this node with an HTTP Request node: `POST https://api.pdfrender.dev/v1/render`, header `X-API-Key`, a JSON body with the fields `html` and `filename` (Using Fields Below) and Response Format **File**. The README has the details.\n4. **Email the PDF**: add a Gmail credential.\n\n**Airtable**: swap the trigger for an Airtable Trigger. **monday.com**: swap it for a Webhook node called by a monday.com webhook integration, then read the item's columns with the monday.com node (Board Item > Get).",
+        "height": 340,
+        "width": 620,
+        "color": 6
+      },
+      "id": "bf3e5d3f-3d98-5423-b639-3dd1c809f14b",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "b8facc8a-56d0-5485-a803-21eb5405e0d7",
+      "name": "New row in sheet",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Runs once per new row. The keys are the sheet's header row: Invoice,\n// Client, Email, Description, Quantity, Unit price, Due date. Rename them here\n// if your headers differ.\nconst row = $json;\n\nconst esc = (v) => String(v ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' })[c]);\nconst qty = Number(row['Quantity'] || 0);\nconst price = Number(row['Unit price'] || 0);\nconst amount = (qty * price).toFixed(2);\n\nconst html = `<!doctype html>\n<html><head><meta charset=\"utf-8\"><style>\n@page { size: A4; margin: 22mm;\n  @bottom-center { content: \"Page \" counter(page) \" of \" counter(pages); font: 8pt sans-serif; color: #6b7480 } }\nbody { font: 11pt/1.5 \"DejaVu Sans\", sans-serif; color: #1c2024 }\nh1 { font-size: 20pt; margin: 0 0 2mm }\n.meta { color: #6b7480; margin-bottom: 10mm }\ntable { width: 100%; border-collapse: collapse }\nth { text-align: left; border-bottom: 2px solid #1c2024 }\ntd { padding: 3mm 0; border-bottom: 1px solid #e3e6ea }\n.num { text-align: right }\n</style></head><body>\n<h1>Invoice ${esc(row['Invoice'])}</h1>\n<p class=\"meta\">${esc(row['Client'])} · Due ${esc(row['Due date'])}</p>\n<table>\n  <thead><tr><th>Description</th><th class=\"num\">Qty</th><th class=\"num\">Unit price</th><th class=\"num\">Amount</th></tr></thead>\n  <tbody>\n    <tr><td>${esc(row['Description'])}</td><td class=\"num\">${esc(qty)}</td><td class=\"num\">${price.toFixed(2)}</td><td class=\"num\">${amount}</td></tr>\n  </tbody>\n</table>\n</body></html>`;\n\nconst id = String(row['Invoice'] ?? 'document').replace(/[^A-Za-z0-9_-]/g, '_');\nreturn {\n  json: {\n    html,\n    filename: `invoice-${id}.pdf`,\n    email_to: row['Email'] ?? '',\n    client: row['Client'] ?? '',\n    subject: `Invoice ${row['Invoice'] ?? ''}`.trim(),\n  },\n};\n"
+      },
+      "id": "aaaa5479-35fc-5753-b71a-9c5043b8b893",
+      "name": "Build HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "pdfrender",
+        "operation": "render_html_to_pdf",
+        "html": "={{ $json.html }}",
+        "additionalFields": {
+          "filename": "={{ $json.filename }}"
+        }
+      },
+      "id": "e6886fda-77b1-543f-8dfb-1270bba3115d",
+      "name": "Render PDF",
+      "type": "@pdfrender-dev/n8n-nodes-pdfrender.pdfrender",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Build HTML').item.json.email_to }}",
+        "subject": "={{ $('Build HTML').item.json.subject }}",
+        "emailType": "html",
+        "message": "=<p>Hello {{ $('Build HTML').item.json.client }},</p><p>please find the invoice attached as a PDF.</p>",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "data"
+              }
+            ]
+          }
+        }
+      },
+      "id": "6dbd8057-5e6a-566d-8126-564940b5f703",
+      "name": "Email the PDF",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "New row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Build HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build HTML": {
+      "main": [
+        [
+          {
+            "node": "Render PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render PDF": {
+      "main": [
+        [
+          {
+            "node": "Email the PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "New row in sheet": [
+      {
+        "json": {
+          "row_number": 2,
+          "Invoice": "2026-041",
+          "Client": "Northwind Studio",
+          "Email": "billing@example.com",
+          "Description": "Design retainer, September",
+          "Quantity": 1,
+          "Unit price": 1800,
+          "Due date": "2026-10-30"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}
