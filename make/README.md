@@ -2,7 +2,7 @@
 
 HTML and CSS to PDF API and MCP server. WeasyPrint with page headers, footers and page numbers, no headless browser. Hosted in Germany.
 
-The [pdfrender](https://pdfrender.dev) custom app for Make, version 1.0.1,
+The [pdfrender](https://pdfrender.dev) custom app for Make, version 1.0.2,
 generated from the API's [OpenAPI document](../openapi.json). Connect it with
 an API key: [create one](https://pdfrender.dev/go/make?to=/app/api-keys).
 
