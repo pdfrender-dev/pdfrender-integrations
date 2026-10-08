@@ -13,6 +13,7 @@ Official integrations for the [pdfrender API](https://pdfrender.dev), generated 
 ## Integrations
 
 - **n8n** — community node [`@pdfrender-dev/n8n-nodes-pdfrender`](https://www.npmjs.com/package/@pdfrender-dev/n8n-nodes-pdfrender), install it under Settings → Community Nodes
+- **Dify** — [`podshalocef/pdfrender`](https://marketplace.dify.ai/plugin/podshalocef/pdfrender) on the Dify Marketplace
 - **Python SDK** — `pip install pdfrender` · [PyPI](https://pypi.org/project/pdfrender/)
 - **TypeScript SDK** — `npm install @pdfrender-dev/sdk` · [npm](https://www.npmjs.com/package/@pdfrender-dev/sdk)
 - **GitHub Action** — [`pdfrender-dev/pdfrender-action`](https://github.com/marketplace/actions/pdfrender-api) on the GitHub Marketplace
