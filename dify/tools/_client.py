@@ -10,7 +10,7 @@ import httpx
 BASE_URL = 'https://api.pdfrender.dev'
 AUTH_HEADER = 'X-API-Key'
 CREDENTIAL = 'x_api_key'
-USER_AGENT = 'pdfrender-dify/1.0.5'
+USER_AGENT = 'pdfrender-dify/1.0.6'
 TIMEOUT = 240
 TITLE = 'pdfrender'
 
