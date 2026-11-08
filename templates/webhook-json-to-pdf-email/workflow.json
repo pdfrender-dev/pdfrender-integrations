@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Webhook JSON to PDF, sent by email\n\nA POST with a JSON body arrives, a Code node turns the fields you choose into an HTML document, pdfrender renders it to a PDF, and Gmail sends the PDF as an attachment.\n\n**Try it**: the Webhook node has pinned sample data, so **Execute workflow** runs end to end without a real call. Unpin it to receive live requests.\n\nAPI key: https://pdfrender.dev/go/tpl-webhook-json-to-pdf-email?to=/app/api-keys",
-        "height": 320,
+        "content": "## Webhook JSON to PDF, sent by email\n\nA POST with a JSON body arrives, a Code node turns the fields you choose into an HTML document, pdfrender renders it to a PDF, and Gmail sends the PDF as an attachment.\n\nEvery node ships with n8n, so the workflow runs on n8n Cloud and self-hosted n8n.\n\n**Try it**: the Webhook node has pinned sample data, so **Execute workflow** runs end to end without a real call. Unpin it to receive live requests.\n\nAPI key: https://pdfrender.dev/go/tpl-webhook-json-to-pdf-email?to=/app/api-keys",
+        "height": 380,
         "width": 560,
         "color": 4
       },
@@ -14,13 +14,13 @@
       "typeVersion": 1,
       "position": [
         -80,
-        -360
+        -420
       ]
     },
     {
       "parameters": {
-        "content": "### Setup\n\n1. **Receive order JSON**: copy the production URL and POST your JSON to it. The node answers at once; the PDF is made afterwards.\n2. **Build HTML**: edit the field names and the HTML. Only fields named there reach the PDF, and every value is HTML-escaped.\n3. **pdfrender node**: on self-hosted n8n, open **Settings > Community Nodes**, install `@pdfrender-dev/n8n-nodes-pdfrender`, then add a **pdfrender API** credential with your API key. On n8n Cloud, which installs only verified community nodes, replace this node with an HTTP Request node: `POST https://api.pdfrender.dev/v1/render`, header `X-API-Key`, a JSON body with the fields `html` and `filename` (Using Fields Below) and Response Format **File**. The README has the details.\n4. **Email the PDF**: add a Gmail credential. The recipient comes from `customer.email` in the payload.",
-        "height": 320,
+        "content": "### Setup\n\n1. **Receive order JSON**: copy the production URL and POST your JSON to it. The node answers at once; the PDF is made afterwards.\n2. **Build HTML**: edit the field names and the HTML. Only fields named there reach the PDF, and every value is HTML-escaped.\n3. **Render PDF**: an HTTP Request node. It POSTs `html` and `filename` as JSON to `https://api.pdfrender.dev/v1/render` and puts the PDF in the binary field `data`. Create a **Header Auth** credential for it: name `X-API-Key`, value your API key.\n4. **Email the PDF**: add a Gmail credential. The recipient comes from `customer.email` in the payload.",
+        "height": 380,
         "width": 600,
         "color": 6
       },
@@ -30,7 +30,7 @@
       "typeVersion": 1,
       "position": [
         520,
-        -360
+        -420
       ]
     },
     {
@@ -66,17 +66,36 @@
     },
     {
       "parameters": {
-        "resource": "pdfrender",
-        "operation": "render_html_to_pdf",
-        "html": "={{ $json.html }}",
-        "additionalFields": {
-          "filename": "={{ $json.filename }}"
+        "method": "POST",
+        "url": "https://api.pdfrender.dev/v1/render",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "html",
+              "value": "={{ $json.html }}"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $json.filename }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
         }
       },
       "id": "bfd21f89-95c0-5616-80d9-e396a01f7df5",
       "name": "Render PDF",
-      "type": "@pdfrender-dev/n8n-nodes-pdfrender.pdfrender",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
       "position": [
         480,
         0

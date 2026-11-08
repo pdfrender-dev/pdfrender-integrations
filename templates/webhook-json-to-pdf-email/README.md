@@ -1,17 +1,18 @@
 # Webhook JSON to PDF, sent by email
 
-An [n8n](https://n8n.io) workflow: a webhook receives a JSON payload, a Code
-node turns the fields you choose into an HTML document, the pdfrender node
-renders it to a PDF, and Gmail sends the PDF as an attachment.
+An [n8n](https://n8n.io) workflow: a webhook receives a JSON payload, and a
+Code node turns the fields you choose into an HTML document. An HTTP Request
+node sends it to pdfrender, which returns the PDF, and Gmail sends the PDF as
+an attachment.
 
 ```
-Webhook (POST) -> Code: build HTML -> pdfrender: Render HTML to PDF -> Gmail: send with attachment
+Webhook (POST) -> Code: build HTML -> HTTP Request: POST /v1/render -> Gmail: send with attachment
 ```
 
 ## What you need
 
-- n8n with the pdfrender community node `@pdfrender-dev/n8n-nodes-pdfrender`
-  (self-hosted: **Settings > Community Nodes > Install**).
+- n8n Cloud, or a self-hosted n8n 2.33 or later. Every node in the workflow
+  ships with n8n, so there is nothing to install.
 - A pdfrender API key: https://pdfrender.dev/go/tpl-webhook-json-to-pdf-email?to=/app/api-keys
 - A Gmail credential in n8n (or swap the last node for **Send Email** over SMTP).
 
@@ -23,7 +24,8 @@ Webhook (POST) -> Code: build HTML -> pdfrender: Render HTML to PDF -> Gmail: se
 3. **Build HTML**: change the field names and the HTML to match your payload.
    Only the fields named there reach the PDF, so a new or renamed key in the
    payload cannot break the layout, and every value is HTML-escaped.
-4. **Render PDF**: add a **pdfrender API** credential with your key.
+4. **Render PDF**: create a **Header Auth** credential with the name
+   `X-API-Key` and your API key as the value.
 5. **Email the PDF**: add a Gmail credential. The recipient comes from
    `customer.email` in the payload.
 6. Activate the workflow and send a test call:
@@ -38,16 +40,19 @@ curl -X POST https://<your-n8n>/webhook/order-to-pdf \
 The Webhook node carries pinned sample data, so **Execute workflow** runs end
 to end before any real call arrives. Unpin it to receive live requests.
 
-## n8n Cloud
+## The HTTP Request node
 
-n8n Cloud installs only verified community nodes. Until the pdfrender node is
-verified, replace **Render PDF** with an **HTTP Request** node:
-`POST https://api.pdfrender.dev/v1/render` with the header
-`X-API-Key: <your key>`, **Send Body** on, **Body Content Type** JSON,
-**Specify Body** "Using Fields Below" with `html` = `{{ $json.html }}` and
-`filename` = `{{ $json.filename }}`, and **Options > Response > Response
-Format** set to **File**. The PDF then lands in the binary field `data`, like
-the pdfrender node's.
+**Render PDF** comes set up like this:
+
+- **Method** `POST`, **URL** `https://api.pdfrender.dev/v1/render`.
+- **Authentication** Generic Credential Type, **Generic Auth Type** Header Auth.
+- **Send Body** on, **Body Content Type** JSON, **Specify Body** "Using Fields
+  Below": `html` = `{{ $json.html }}` and `filename` = `{{ $json.filename }}`.
+- **Options > Response > Response Format** File, **Put Output in Field**
+  `data`. Gmail attaches that field.
+
+Each render costs 1 credit, whatever its page count, and a failed render costs
+nothing.
 
 ## Limits
 
