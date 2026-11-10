@@ -12,13 +12,13 @@ identity:
 credentials_for_provider:
   x_api_key:
     type: "secret-input"
-    required: true
+    required: false
     label:
-      en_US: "pdfrender API key"
+      en_US: "pdfrender API key (optional)"
     placeholder:
-      en_US: "Paste your pdfrender API key"
+      en_US: "Leave empty to use the free daily allowance"
     help:
-      en_US: "Create an API key in your pdfrender account"
+      en_US: "Get a free pdfrender API key"
     url: "https://pdfrender.dev/go/dify?to=/app/api-keys"
 tools:
   - "tools/get_me.yaml"
