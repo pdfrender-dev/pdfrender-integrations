@@ -11,7 +11,7 @@ BASE_URL = 'https://api.pdfrender.dev'
 AUTH_HEADER = 'X-API-Key'
 CREDENTIAL = 'x_api_key'
 KEY_URL = 'https://pdfrender.dev/go/dify?to=/app/api-keys'
-USER_AGENT = 'pdfrender-dify/1.0.16'
+USER_AGENT = 'pdfrender-dify/1.0.17'
 TIMEOUT = 240
 TITLE = 'pdfrender'
 
